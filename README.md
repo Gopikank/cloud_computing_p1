@@ -4,6 +4,12 @@ A college microproject demonstrating cloud computing for protecting sensitive
 examination question papers, with a strict submit → lock → admin-access →
 exam → public-release timeline.
 
+> This README documents of the project, before the
+> access tiers were changed so the Setter regains access alongside the
+> Admin. In this version, once a Setter submits a paper, they can **never**
+> open it again themselves — they see it unlock for everyone else on
+> exactly the same schedule as a stranger would.
+
 ## Timeline
 
 The Question Setter enters two times: **Exam Start** and **Public Release**.
@@ -31,21 +37,37 @@ are **enforced inside Firestore Security Rules** by comparing the server's
 `request.time` against the three timestamps saved at submission. No
 client, including a compromised or buggy one, can grant early access.
 
+## Roles and who can access what, and when
+
+| Role | Can submit papers? | Can open paper content, and when |
+|---|---|---|
+| **Question Setter** | Yes | **Never again**, from their own account, after submitting. They can see the paper's metadata (title, times, SHA-256) at any time, but not the file bytes, at any stage — not even after the exam, not even after public release, through their own privileged access. (They *could* open it after public release the same way any signed-in user can, but that's not a setter-specific privilege — it's the same access everyone gets.) |
+| **Admin / Teacher** | Yes (this version allows Admin to submit too) | From **2 minutes before exam start** onward |
+| **Examiner / Student** | No | Only from the **public release time** onward — same as everyone else |
+| Public (not signed in) | No | Only from the **public release time** onward |
+
 ## Why the Setter can never re-open the paper
 
 Most "locking" demos just hide a button in the UI, which the setter's own
-account could bypass. Here it's structural:
+account could bypass by calling Firestore directly. Here it's structural:
 
 - Paper **metadata** (title, times, SHA-256 fingerprint) lives in
   `papers/{id}` and IS visible to the setter and to admins at any time —
   so the setter can see their paper is locked and awaiting its schedule.
 - The **file bytes** live in a separate document, `paperContent/{id}`.
-  The security rule for that collection has no "creator" exception at
-  all — the setter has exactly the same read access as a stranger. Before
-  the public release time, only an authenticated **admin** (and only once
-  the admin-access time has passed) can read it. After the public release
-  time, anyone can read it — the setter included, but at that point the
-  paper is genuinely public information.
+  The security rule for that collection has **no "creator" exception at
+  all** — the setter has exactly the same read access as a stranger.
+  Before the public release time, only an authenticated **Admin** (and
+  only once the admin-access time has passed) can read it. After the
+  public release time, anyone can read it — the setter included, but at
+  that point the paper is genuinely public information, not a special
+  privilege.
+
+This is the key design decision that makes the "setter can't open it
+again" requirement a real guarantee instead of a UI trick: even if the
+setter opened the browser dev tools and called the Firestore SDK directly
+with their own credentials, the security rule on the server would still
+reject the read.
 
 ## Technologies (Spark / free-plan only)
 
@@ -144,13 +166,16 @@ Use the Register form and pick a role for each:
 ### 3. Watch the schedule play out
 - **2 minutes before exam start**: log in as the Admin/Teacher account —
   the card flips to **🟠 ADMIN / TEACHER ACCESS** and "Open Paper" /
-  "Verify Hash" appear for the admin only.
+  "Verify Hash" appear for the admin only. The setter, even logged into
+  their own account, still sees no such buttons on this paper.
 - **At exam start**: nothing changes for access (still admin-only) — this
   models the admin/teacher printing or distributing the paper to the exam
   hall while the online vault itself stays restricted.
 - **At the public release time**: log in as the Examiner/Student (or
   refresh the setter's own session) — the card flips to
-  **🌐 PUBLIC ACCESS** and everyone can open the paper and verify its hash.
+  **🌐 PUBLIC ACCESS** and everyone, including the original setter, can
+  open the paper and verify its hash — but only because it is now
+  genuinely public, not because of any special setter privilege.
 
 The list re-renders every few seconds, so you can literally watch the
 status change live without touching a button — refresh only if you want
@@ -188,6 +213,10 @@ everyone else sees only their own).
 - Because there's no Cloud Storage, file size is capped well below
   Firestore's 1 MiB document limit — fine for a dummy paper, not for a
   real exam paper with images/scans.
+- The Setter is permanently excluded from opening their own submitted
+  paper through any special privilege — after public release they can
+  view it only as a member of the general public, the same as anyone
+  else.
 - "Publicly accessible" here means any signed-in app user (any role) can
   open it once the release time passes; the Firestore rules also permit
   fully unauthenticated reads via a direct Firestore/REST call at that
