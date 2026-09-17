@@ -8,7 +8,6 @@ import {
   query, orderBy, onSnapshot, serverTimestamp, Timestamp
 } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
-// 1. Paste your Firebase Web App config here (Project settings > General > Your apps)
  const firebaseConfig = {
     apiKey: "AIzaSyANxdmF-1hwjtVRwtUx0c2iyyXAURaxf0k",
     authDomain: "cloud-exam-paper-vault-b2424.firebaseapp.com",
@@ -24,8 +23,8 @@ const db = getFirestore(app);
 const $ = id => document.getElementById(id);
 
 let currentUser = null, currentRole = null, papers = [];
-const ADMIN_LEAD_MS = 2 * 60 * 1000; // exactly 2 minutes before exam start
-const MAX_FILE_BYTES = 700 * 1024;   // keep well under Firestore's 1 MiB document limit
+const ADMIN_LEAD_MS = 2 * 60 * 1000; 
+const MAX_FILE_BYTES = 700 * 1024;   
 
 function show(msg) { const x = $("message"); x.textContent = msg; x.style.display = "block"; setTimeout(() => x.style.display = "none", 3500); }
 function esc(v) { return String(v ?? "").replace(/[&<>"']/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[m])); }
@@ -54,7 +53,6 @@ async function logAction(action, details, paperId) {
   });
 }
 
-// ---------------- Auth ----------------
 $("loginBtn").onclick = async () => {
   try { await signInWithEmailAndPassword(auth, $("loginEmail").value, $("loginPassword").value); show("Login successful"); }
   catch (e) { show(e.message); }
@@ -69,7 +67,6 @@ $("registerBtn").onclick = async () => {
 };
 $("logoutBtn").onclick = () => signOut(auth);
 
-// ---------------- Submit & lock a paper ----------------
 $("submitBtn").onclick = async () => {
   try {
     if (!["setter", "admin"].includes(currentRole)) return show("Only a Question Setter/Admin can submit a paper.");
@@ -113,11 +110,10 @@ $("submitBtn").onclick = async () => {
 
     await logAction("PAPER_SUBMITTED_LOCKED", `"${title}" submitted and immediately locked`, paperRef.id);
     $("paperTitle").value = ""; $("examTime").value = ""; $("publicTime").value = ""; $("paperFile").value = "";
-    show("🔒 Paper submitted and locked. You will not be able to open it again.");
+    show(" Paper submitted and locked. You will not be able to open it again.");
   } catch (e) { show(e.message); }
 };
 
-// ---------------- Phase / access helpers ----------------
 function phaseOf(p, now) {
   if (now < p.adminAccessTime.toDate()) return "LOCKED";
   if (now < p.publicReleaseTime.toDate()) return "ADMIN_ACCESS";
@@ -132,7 +128,7 @@ function canOpenContent(p, now) {
 
 async function openPaper(p) {
   const now = new Date();
-  if (!canOpenContent(p, now)) return show("🔒 This paper is not accessible yet.");
+  if (!canOpenContent(p, now)) return show(" This paper is not accessible yet.");
   try {
     const snap = await getDoc(doc(db, "paperContent", p.id));
     if (!snap.exists()) return show("Content not found.");
@@ -155,7 +151,6 @@ async function verifyPaper(p) {
   } catch (e) { show(e.message); }
 }
 
-// ---------------- Render ----------------
 function renderPapers() {
   const now = new Date();
   const visible = papers.filter(p => currentRole === "admin" || p.creatorId === currentUser.uid || phaseOf(p, now) === "PUBLIC");
@@ -165,7 +160,7 @@ function renderPapers() {
   $("adminCount").textContent = visible.filter(p => phaseOf(p, now) === "ADMIN_ACCESS").length;
   $("publicCount").textContent = visible.filter(p => phaseOf(p, now) === "PUBLIC").length;
 
-  const label = { LOCKED: "🔒 LOCKED", ADMIN_ACCESS: "🟠 ADMIN / TEACHER ACCESS", PUBLIC: "🌐 PUBLIC ACCESS" };
+  const label = { LOCKED: " LOCKED", ADMIN_ACCESS: "🟠 ADMIN / TEACHER ACCESS", PUBLIC: "🌐 PUBLIC ACCESS" };
 
   $("papers").innerHTML = visible.length ? visible.map(p => {
     const phase = phaseOf(p, now);
@@ -202,8 +197,6 @@ function subscribe() {
   });
 }
 
-// Re-render every few seconds so LOCKED -> ADMIN_ACCESS -> PUBLIC transitions
-// appear live without needing any server/Cloud Function to flip a status flag.
 setInterval(() => { if (currentUser) renderPapers(); }, 5000);
 
 onAuthStateChanged(auth, async user => {
