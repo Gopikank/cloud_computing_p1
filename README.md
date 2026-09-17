@@ -160,12 +160,12 @@ Use the Register form and pick a role for each:
 4. Set **Public release time** ~2 minutes after that.
 5. Choose a small `.txt` or `.pdf` dummy file (≤ 700 KB) and click
    **Submit & Lock Paper**.
-6. The paper instantly shows **🔒 LOCKED** — including to the setter, who
+6. The paper instantly shows ** LOCKED** — including to the setter, who
    has no "Open Paper" button at all from this point on.
 
 ### 3. Watch the schedule play out
 - **2 minutes before exam start**: log in as the Admin/Teacher account —
-  the card flips to **🟠 ADMIN / TEACHER ACCESS** and "Open Paper" /
+  the card flips to ** ADMIN / TEACHER ACCESS** and "Open Paper" /
   "Verify Hash" appear for the admin only. The setter, even logged into
   their own account, still sees no such buttons on this paper.
 - **At exam start**: nothing changes for access (still admin-only) — this
@@ -173,7 +173,7 @@ Use the Register form and pick a role for each:
   hall while the online vault itself stays restricted.
 - **At the public release time**: log in as the Examiner/Student (or
   refresh the setter's own session) — the card flips to
-  **🌐 PUBLIC ACCESS** and everyone, including the original setter, can
+  ** PUBLIC ACCESS** and everyone, including the original setter, can
   open the paper and verify its hash — but only because it is now
   genuinely public, not because of any special setter privilege.
 
