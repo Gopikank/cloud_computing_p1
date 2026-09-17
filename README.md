@@ -8,21 +8,21 @@ Cloud-Based Examination Question Paper Vault is a secure cloud-based system desi
 The Question Setter enters two times: Exam Start and Public Release.
 Everything else is derived automatically:
 
-```
+
 Submit  → PAPER IMMEDIATELY LOCKED (setter can never open it again)
 Exam Start − 2 minutes → ADMIN / TEACHER ACCESS begins
 Exam Start              → exam begins (still admin/teacher access only)
 Public Release time     → PAPER BECOMES PUBLICLY ACCESSIBLE
-```
+
 
 Example — Exam Start 10:00 AM, Public Release 1:00 PM:
 
-```
+
 09:57 AM → LOCKED
 09:58 AM → ADMIN / TEACHER ACCESS
 10:00 AM → EXAM STARTS
 01:00 PM → PUBLIC ACCESS
-```
+
 
 Nothing here depends on a person clicking a "release" button, an admin
 approving anything, or a Cloud Function ticking over — the access windows
