@@ -143,14 +143,14 @@ Use the Register form and pick a role for each:
    has no "Open Paper" button at all from this point on.
 
 ### 3. Watch the schedule play out
-- **2 minutes before exam start**: log in as the Admin/Teacher account —
+- 2 minutes before exam start: log in as the Admin/Teacher account —
   the card flips to ** ADMIN / TEACHER ACCESS** and "Open Paper" /
   "Verify Hash" appear for the admin only. The setter, even logged into
   their own account, still sees no such buttons on this paper.
-- **At exam start**: nothing changes for access (still admin-only) — this
+- At exam start: nothing changes for access (still admin-only) — this
   models the admin/teacher printing or distributing the paper to the exam
   hall while the online vault itself stays restricted.
-- **At the public release time**: log in as the Examiner/Student (or
+- At the public release time: log in as the Examiner/Student (or
   refresh the setter's own session) — the card flips to
   ** PUBLIC ACCESS** and everyone, including the original setter, can
   open the paper and verify its hash — but only because it is now
@@ -161,7 +161,7 @@ status change live without touching a button — refresh only if you want
 to fetch content that just became newly available.
 
 ### 4. Integrity check
-Click **Verify Hash** once a paper is open. The app re-downloads
+Click Verify Hash once a paper is open. The app re-downloads
 the stored bytes, recomputes SHA-256 in the browser, and compares it to
 the fingerprint captured at submission time. A mismatch would mean the
 stored bytes were altered.
@@ -175,7 +175,7 @@ everyone else sees only their own).
 - Cloud authentication (Firebase Auth)
 - Cloud database (Firestore) as the sole store for both metadata and file
   bytes — no separate storage service needed
-- Declarative, server-evaluated **time-based access control** via
+- Declarative, server-evaluated time-based access control via
   Security Rules (no server code, no Cloud Functions, no Blaze plan)
 - Document-level data hiding (splitting metadata from content into two
   collections so a role can see *that* a paper exists without being able
@@ -184,4 +184,8 @@ everyone else sees only their own).
 - Audit logging
 - Managed cloud hosting
 
+##Deployment 
+
 https://exam-paper-vault-v2.web.app
+
+
