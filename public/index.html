@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cloud Exam Paper Vault</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topbar">
+  <h1>🔐 Cloud Exam Paper Vault</h1>
+  <div id="userBox" class="hidden">
+    <span id="userEmail"></span>
+    <span id="userRole" class="badge"></span>
+    <button id="logoutBtn" class="secondary">Logout</button>
+  </div>
+</header>
+
+<div id="message" class="toast"></div>
+
+<!-- AUTH -->
+<section id="authSection" class="card">
+  <div class="auth-grid">
+    <div>
+      <h2>Login</h2>
+      <input id="loginEmail" type="email" placeholder="Email">
+      <input id="loginPassword" type="password" placeholder="Password">
+      <button id="loginBtn">Login</button>
+    </div>
+    <div>
+      <h2>Register</h2>
+      <input id="regEmail" type="email" placeholder="Email">
+      <input id="regPassword" type="password" placeholder="Password">
+      <select id="regRole">
+        <option value="setter">Question Setter</option>
+        <option value="admin">Admin / Teacher</option>
+        <option value="examiner">Examiner / Student</option>
+      </select>
+      <button id="registerBtn">Register</button>
+    </div>
+  </div>
+  <p class="muted small">Demo project: role is self-selected at registration only for classroom testing. In a real deployment, roles would be assigned by a trusted admin process.</p>
+</section>
+
+<!-- APP -->
+<section id="appSection" class="hidden">
+
+  <div class="stats">
+    <div class="stat"><span id="totalCount">0</span><label>Total Papers</label></div>
+    <div class="stat"><span id="lockedCount">0</span><label>Currently Locked</label></div>
+    <div class="stat"><span id="adminCount">0</span><label>Admin/Teacher Access</label></div>
+    <div class="stat"><span id="publicCount">0</span><label>Public</label></div>
+  </div>
+
+  <section id="setterPanel" class="card hidden">
+    <h2>Submit Question Paper</h2>
+    <p class="muted small">Once submitted the paper is <b>immediately LOCKED</b>. You will not be able to open or read it again — you will see it unlock on the same schedule as everyone else.</p>
+    <input id="paperTitle" type="text" placeholder="Paper title (e.g. Data Structures - Unit Test 2)">
+    <label class="small muted">Exam start time</label>
+    <input id="examTime" type="datetime-local">
+    <label class="small muted">Public release time (must be after exam start)</label>
+    <input id="publicTime" type="datetime-local">
+    <input id="paperFile" type="file" accept=".pdf,.txt">
+    <p class="muted small">Use only a small dummy/demo paper (.txt or .pdf, ≤ 700 KB). There is no Firebase Storage / Blaze plan involved — the file is fingerprinted with SHA-256 and stored directly and securely in Firestore.</p>
+    <button id="submitBtn">Submit &amp; Lock Paper</button>
+  </section>
+
+  <section class="card">
+    <h2>Papers</h2>
+    <div id="papers"></div>
+  </section>
+
+  <section class="card">
+    <h2>Audit Log</h2>
+    <div id="logs"></div>
+  </section>
+</section>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>

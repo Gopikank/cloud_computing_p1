@@ -1,0 +1,71 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+
+    function role() {
+      return signedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role
+        : "";
+    }
+
+    function isAdmin()  { return role() == "admin"; }
+    function isSetter() { return role() == "setter"; }
+
+    // ---------- Users ----------
+    match /users/{uid} {
+      allow create: if signedIn() && request.auth.uid == uid;
+      allow read:   if signedIn() && (request.auth.uid == uid || isAdmin());
+      allow update: if signedIn() && (request.auth.uid == uid || isAdmin());
+    }
+
+    // ---------- Paper metadata (title, times, sha256 fingerprint) ----------
+    // No "status" field is ever written by a client and no update is ever
+    // allowed: every access window is derived purely from request.time
+    // compared against the three timestamps fixed at submission. This is
+    // what makes the lock / admin-access / public-release schedule
+    // tamper-proof without any server or Cloud Function.
+    match /papers/{paperId} {
+      allow read: if
+        // publicly readable (even signed-out) once the public release time arrives
+        request.time >= resource.data.publicReleaseTime ||
+        // otherwise only the admin/teacher, or the setter who submitted it
+        // (setter sees ONLY this metadata card - never the content, see below)
+        (signedIn() && (isAdmin() || resource.data.creatorId == request.auth.uid));
+
+      allow create: if signedIn() && (isSetter() || isAdmin())
+        && request.resource.data.creatorId == request.auth.uid
+        && request.resource.data.adminAccessTime  < request.resource.data.examStartTime
+        && request.resource.data.examStartTime    < request.resource.data.publicReleaseTime;
+
+      // Immutable: once submitted, the paper is LOCKED. Nobody - not even
+      // the setter or an admin - can edit or delete it afterwards.
+      allow update, delete: if false;
+    }
+
+    // ---------- Paper content (base64 file bytes) ----------
+    // Deliberately a SEPARATE document from /papers so that Firestore's
+    // document-level security can hide the content from the setter (and
+    // from everyone else) while still letting the metadata card show.
+    match /paperContent/{paperId} {
+      allow read: if
+        request.time >= get(/databases/$(database)/documents/papers/$(paperId)).data.publicReleaseTime ||
+        (
+          signedIn() && isAdmin() &&
+          request.time >= get(/databases/$(database)/documents/papers/$(paperId)).data.adminAccessTime
+        );
+
+      // Written once, at submission time, alongside the metadata doc.
+      allow create: if signedIn() && (isSetter() || isAdmin());
+      allow update, delete: if false;
+    }
+
+    // ---------- Audit log ----------
+    match /auditLogs/{id} {
+      allow read:   if signedIn() && (isAdmin() || resource.data.userId == request.auth.uid);
+      allow create: if signedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if false;
+    }
+  }
+}
