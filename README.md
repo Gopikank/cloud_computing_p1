@@ -1,18 +1,11 @@
+
 # Cloud-Based Examination Question Paper Vault
-
-A college microproject demonstrating cloud computing for protecting sensitive
-examination question papers, with a strict submit → lock → admin-access →
-exam → public-release timeline.
-
-> This README documents of the project, before the
-> access tiers were changed so the Setter regains access alongside the
-> Admin. In this version, once a Setter submits a paper, they can **never**
-> open it again themselves — they see it unlock for everyone else on
-> exactly the same schedule as a stranger would.
+**Project Description**
+Cloud-Based Examination Question Paper Vault is a secure cloud-based system designed to protect examination question papers from unauthorized and premature access. The system follows a controlled submit → lock → admin/teacher access → exam → public release process. A Question Setter can submit the paper along with the exam start time and public release time. After submission, the paper is immediately locked, preventing the setter from accessing its content. Two minutes before the examination starts, authorized Admins and Teachers can access the paper, while other users remain restricted. After the examination, the paper is made publicly accessible only at the predefined release time. The system uses Firebase Authentication for user management, Cloud Firestore for storing paper data, Firestore Security Rules for role- and time-based access control, and SHA-256 hashing for verifying paper integrity. Audit logs are also maintained to record important activities such as paper submission, access, and verification. This project demonstrates how cloud computing and security technologies can be combined to provide controlled and secure management of examination question papers.
 
 ## Timeline
 
-The Question Setter enters two times: **Exam Start** and **Public Release**.
+The Question Setter enters two times: Exam Start and Public Release.
 Everything else is derived automatically:
 
 ```
@@ -33,7 +26,7 @@ Example — Exam Start 10:00 AM, Public Release 1:00 PM:
 
 Nothing here depends on a person clicking a "release" button, an admin
 approving anything, or a Cloud Function ticking over — the access windows
-are **enforced inside Firestore Security Rules** by comparing the server's
+are enforced inside Firestore Security Rules by comparing the server's
 `request.time` against the three timestamps saved at submission. No
 client, including a compromised or buggy one, can grant early access.
 
@@ -51,13 +44,13 @@ client, including a compromised or buggy one, can grant early access.
 Most "locking" demos just hide a button in the UI, which the setter's own
 account could bypass by calling Firestore directly. Here it's structural:
 
-- Paper **metadata** (title, times, SHA-256 fingerprint) lives in
+- Paper metadata (title, times, SHA-256 fingerprint) lives in
   `papers/{id}` and IS visible to the setter and to admins at any time —
   so the setter can see their paper is locked and awaiting its schedule.
-- The **file bytes** live in a separate document, `paperContent/{id}`.
-  The security rule for that collection has **no "creator" exception at
-  all** — the setter has exactly the same read access as a stranger.
-  Before the public release time, only an authenticated **Admin** (and
+- The file bytes live in a separate document, `paperContent/{id}`.
+  The security rule for that collection has no "creator" exception at
+  all — the setter has exactly the same read access as a stranger.
+  Before the public release time, only an authenticated Admin (and
   only once the admin-access time has passed) can read it. After the
   public release time, anyone can read it — the setter included, but at
   that point the paper is genuinely public information, not a special
@@ -69,24 +62,12 @@ setter opened the browser dev tools and called the Firestore SDK directly
 with their own credentials, the security rule on the server would still
 reject the read.
 
-## Technologies (Spark / free-plan only)
+## Technologies
 
 - Firebase Authentication (Email/Password)
 - Cloud Firestore (rules-enforced time-gated access — no Cloud Functions)
 - Firebase Hosting
 - Browser Web Crypto API (SHA-256)
-
-**No Firebase Cloud Storage and no Cloud Functions are used**, so the
-project runs entirely on the free **Spark plan** — no billing account
-required. The dummy paper's bytes are base64-encoded and stored directly
-as a Firestore field, which is why this prototype is only meant for a
-**small demo/dummy file** (see limits below).
-
-## Important security note
-
-This is an educational prototype, not a production examination system.
-Do **not** upload a real confidential examination paper — use a small
-dummy/demo text or PDF file only.
 
 ## Project structure
 ```text
@@ -107,8 +88,8 @@ Cloud_Exam_Paper_Vault/
 
 ### 1. Create a Firebase project
 In the [Firebase Console](https://console.firebase.google.com/):
-- Create a project (stay on the **Spark/free plan** — nothing here needs Blaze).
-- Enable **Authentication → Sign-in method → Email/Password**.
+- Create a project.
+- Enable Authentication → Sign-in method → Email/Password**.
 - Enable **Firestore Database** (start in production mode; the rules file
   in this repo replaces the defaults).
 - Enable **Hosting**.
@@ -116,9 +97,7 @@ In the [Firebase Console](https://console.firebase.google.com/):
 
 ### 2. Configure the frontend
 Open `public/app.js` and replace the placeholder values in `firebaseConfig`
-with your Web App configuration from step 1.
-
-Never commit a service-account JSON file to this project or to GitHub.
+with Web App configuration from step 1.
 
 ### 3. Install the Firebase CLI
 ```cmd
@@ -126,12 +105,12 @@ npm install -g firebase-tools
 firebase login
 ```
 
-### 4. Connect this folder to your project
+### 4. Connect this folder to project
 ```cmd
 cp .firebaserc.example .firebaserc
 ```
-Edit `.firebaserc` and put your Firebase project ID in place of
-`YOUR_FIREBASE_PROJECT_ID` (or run `firebase use --add` and pick it
+Edit `.firebaserc` and put Firebase project ID in place of
+`OUR_FIREBASE_PROJECT_ID` (or run `firebase use --add` and pick it
 interactively).
 
 ### 5. Deploy Firestore rules
@@ -158,7 +137,7 @@ Use the Register form and pick a role for each:
 2. Enter a title.
 3. Set **Exam start time** ~5 minutes in the future.
 4. Set **Public release time** ~2 minutes after that.
-5. Choose a small `.txt` or `.pdf` dummy file (≤ 700 KB) and click
+5. Choose a small `.txt` or `.pdf`file and click
    **Submit & Lock Paper**.
 6. The paper instantly shows ** LOCKED** — including to the setter, who
    has no "Open Paper" button at all from this point on.
@@ -182,7 +161,7 @@ status change live without touching a button — refresh only if you want
 to fetch content that just became newly available.
 
 ### 4. Integrity check
-Click **Verify Hash** once a paper is open to you. The app re-downloads
+Click **Verify Hash** once a paper is open. The app re-downloads
 the stored bytes, recomputes SHA-256 in the browser, and compares it to
 the fingerprint captured at submission time. A mismatch would mean the
 stored bytes were altered.
